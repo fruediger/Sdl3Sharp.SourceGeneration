@@ -13,6 +13,8 @@ internal sealed partial class SourceGenerator : IIncrementalGenerator
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
+		context.RegisterPostInitializationOutput(static pic => pic.AddEmbeddedAttributeDefinition());
+
 		context.RegisterPostInitializationOutput(GenerateNativeImportAttributesSource);
 
 		context.RegisterImplementationSourceOutput(

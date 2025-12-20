@@ -57,6 +57,7 @@ partial class SourceGenerator
                 namespace {{NativeImportAttributesNamespaceName}};
 
                 /// <summary>Controls the kind of access to an <see cref="{{NativeImportSymbolAttributeTypeName}}{{{NativeImportAttributeLibraryTypeParameterName}}}">imported native symbol</see></summary>
+                [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                 internal enum {{NativeImportSymbolKindTypeName}}
                 {
                     /// <summary>Automatically chooses between <see cref="{{NativeImportSymbolKindGetterMemberName}}">{{NativeImportSymbolKindGetterMemberName}}</see> and <see cref="{{NativeImportSymbolKindSetterMemberName}}">{{NativeImportSymbolKindSetterMemberName}}</see> based off the target method's declaration signature</summary>
@@ -88,6 +89,7 @@ partial class SourceGenerator
 
                 /// <summary>Represents a native library</summary>
                 /// <remarks>More specifically, this type defines a way to resolve and import a native library</remarks>
+                [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                 internal interface {{NativeImportLibraryTypeName}}
                 {                    
                     /// <summary>Gets the name and the search path of the native library to import</summary>
@@ -200,6 +202,7 @@ partial class SourceGenerator
                 }
 
                 /// <summary>Defines a condition for a <see cref="{{NativeImportSymbolAttributeTypeName}}{{{NativeImportAttributeLibraryTypeParameterName}}, {{NativeImportAttributeConditionTypeParameterName}}}">conditionally imported native symbol</see> or <see cref="{{NativeImportSymbolAttributeTypeName}}{{{NativeImportAttributeLibraryTypeParameterName}}, {{NativeImportAttributeConditionTypeParameterName}}}">function</see></summary>
+                [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                 internal interface {{NativeImportConditionTypeName}}
                 {
                     /// <summary>Gets a value indicating of conditionally imported native symbol of function should be imported</summary>
@@ -232,6 +235,7 @@ partial class SourceGenerator
                 /// <param name="{{symbolNameParameterName}}"><inheritdoc cref="{{NativeImportAttributeSymbolNamePropertyName}}" path="/value"/></param>
                 /// <typeparam name="{{NativeImportAttributeLibraryTypeParameterName}}">The type that represent the native library that should get imported</typeparam>
                 /// <seealso cref="{{NativeImportSymbolKindTypeName}}"/>
+                [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
                 internal sealed class {{NativeImportSymbolAttributeTypeName}}<{{NativeImportAttributeLibraryTypeParameterName}}>(string? {{symbolNameParameterName}} = default) : global::System.Attribute
                     where {{NativeImportAttributeLibraryTypeParameterName}} : notnull, {{NativeImportLibraryTypeName}}
@@ -255,6 +259,7 @@ partial class SourceGenerator
                 /// No further indicating is given if a native symbol is not imported.
                 /// </remarks>
                 /// <seealso cref="{{NativeImportSymbolKindTypeName}}"/>
+                [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
                 internal sealed class {{NativeImportSymbolAttributeTypeName}}<{{NativeImportAttributeLibraryTypeParameterName}}, {{NativeImportAttributeConditionTypeParameterName}}>(string? {{symbolNameParameterName}} = default) : global::System.Attribute
                     where {{NativeImportAttributeLibraryTypeParameterName}} : notnull, {{NativeImportLibraryTypeName}}
@@ -272,6 +277,7 @@ partial class SourceGenerator
                 /// <summary>Indicates that the attributed target method serves as an entry point to an imported native function</summary>
                 /// <param name="{{symbolNameParameterName}}"><inheritdoc cref="{{NativeImportAttributeSymbolNamePropertyName}}" path="/value"/></param>
                 /// <typeparam name="{{NativeImportAttributeLibraryTypeParameterName}}">The type that represent the native library that should get imported</typeparam>
+                [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
                 internal sealed class {{NativeImportFunctionAttributeTypeName}}<{{NativeImportAttributeLibraryTypeParameterName}}>(string? {{symbolNameParameterName}} = default) : global::System.Attribute
                     where {{NativeImportAttributeLibraryTypeParameterName}} : notnull, {{NativeImportLibraryTypeName}}
@@ -297,6 +303,7 @@ partial class SourceGenerator
                 /// calling the attributed target method results in at least undefined and erroneous behavior.
                 /// No further indicating is given if a native symbol is not imported.
                 /// </remarks>
+                [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
                 [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
                 internal sealed class {{NativeImportFunctionAttributeTypeName}}<{{NativeImportAttributeLibraryTypeParameterName}}, {{NativeImportAttributeConditionTypeParameterName}}>(string? {{symbolNameParameterName}} = default) : global::System.Attribute
                     where {{NativeImportAttributeLibraryTypeParameterName}} : notnull, {{NativeImportLibraryTypeName}}
