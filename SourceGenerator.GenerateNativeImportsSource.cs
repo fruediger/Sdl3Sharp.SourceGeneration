@@ -34,7 +34,20 @@ partial class SourceGenerator
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier | SymbolDisplayMiscellaneousOptions.CollapseTupleTypes
     );
 
-    private static void GenerateNativeImportsSource(SourceProductionContext spc, (Compilation compilation, (ImmutableArray<ImportSymbolData> symbolImports, (ImmutableArray<ImportSymbolData> conditionalSymbolImports, (ImmutableArray<ImportFunctionData> functionImports, ImmutableArray<ImportFunctionData> conditionalFunctionImports)))) data)
+	private static readonly SymbolDisplayFormat mCommentTypeSymbolDisplayFormat = mDefaultTypeSymbolDisplayFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted);
+
+	private static readonly SymbolDisplayFormat mCommentMethodSymbolDisplayFormat = new(
+		globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+		typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+		genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+		memberOptions: SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeExplicitInterface | SymbolDisplayMemberOptions.IncludeParameters | SymbolDisplayMemberOptions.IncludeContainingType | SymbolDisplayMemberOptions.IncludeRef,
+		delegateStyle: SymbolDisplayDelegateStyle.NameOnly,
+		extensionMethodStyle: SymbolDisplayExtensionMethodStyle.StaticMethod,
+		parameterOptions: SymbolDisplayParameterOptions.IncludeExtensionThis | SymbolDisplayParameterOptions.IncludeModifiers | SymbolDisplayParameterOptions.IncludeType,
+		miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier | SymbolDisplayMiscellaneousOptions.CollapseTupleTypes
+	);
+
+	private static void GenerateNativeImportsSource(SourceProductionContext spc, (Compilation compilation, (ImmutableArray<ImportSymbolData> symbolImports, (ImmutableArray<ImportSymbolData> conditionalSymbolImports, (ImmutableArray<ImportFunctionData> functionImports, ImmutableArray<ImportFunctionData> conditionalFunctionImports)))) data)
     {
         var (compilation, (symbolImports, (conditionalSymbolImports, (functionImports, conditionalFunctionImports)))) = data;
 
@@ -121,7 +134,7 @@ partial class SourceGenerator
 
             var symbolId = 0;
 
-            foreach (var (_, imports) in unconditionalImports)
+            foreach (var (symbolName, imports) in unconditionalImports)
             {
                 var symbolIdentifier = string.Format(CultureInfo.InvariantCulture, SymbolIdentifierFormat, symbolId++);
 
@@ -129,18 +142,32 @@ partial class SourceGenerator
                 {
                     import.LibraryImplementationName = libraryIdentifier;
                     import.SymbolName = symbolIdentifier;
-                }
+				}
 
-                builder.Append($$"""
+				builder.Append($$"""
+                        
+                        // Symbol: {{symbolName}}
+                        // imported by:
+                    """);
+
+				foreach (var import in imports)
+				{
+					builder.Append($$"""
+                            
+                            //  - {{import.TargetMethod.ToDisplayString(mCommentMethodSymbolDisplayFormat)}}
+                        """);
+				}
+
+				builder.Append($$"""
 
                         internal static global::System.IntPtr {{symbolIdentifier}};
 
                     """);
-            }
+			}
 
-            foreach (var (_, importsBySymbolName) in conditionalImports)
+            foreach (var (conditionType, importsBySymbolName) in conditionalImports)
             {
-                foreach (var (_, imports) in importsBySymbolName)
+                foreach (var (symbolName, imports) in importsBySymbolName)
                 {
                     var symbolIdentifier = string.Format(CultureInfo.InvariantCulture, SymbolIdentifierFormat, symbolId++);
 
@@ -148,14 +175,29 @@ partial class SourceGenerator
                     {
                         import.LibraryImplementationName = libraryIdentifier;
                         import.SymbolName = symbolIdentifier;
-                    }
+					}
 
-                    builder.Append($$"""
+					builder.Append($$"""
+                        
+                        // Symbol: {{symbolName}}
+                        // Condition: {{conditionType.ToDisplayString(mCommentTypeSymbolDisplayFormat)}}
+                        // imported by:
+                    """);
 
-                            internal static global::System.IntPtr {{symbolIdentifier}};
-
+					foreach (var import in imports)
+					{
+						builder.Append($$"""
+                            
+                            //  - {{import.TargetMethod.ToDisplayString(mCommentMethodSymbolDisplayFormat)}}
                         """);
-                }
+					}
+
+					builder.Append($$"""
+
+                        internal static global::System.IntPtr {{symbolIdentifier}};
+
+                    """);
+				}
             }
 
             builder.Append($$"""
