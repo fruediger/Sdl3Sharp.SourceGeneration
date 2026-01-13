@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
@@ -47,6 +48,8 @@ partial class SourceGenerator
 		miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier | SymbolDisplayMiscellaneousOptions.CollapseTupleTypes
 	);
 
+    private static readonly TypeSymbolDisplayStringComparer mTypeSymbolComparer = new(format: mDefaultTypeSymbolDisplayFormat, comparison: StringComparison.Ordinal);
+
 	private static void GenerateNativeImportsSource(SourceProductionContext spc, (Compilation compilation, (ImmutableArray<ImportSymbolData> symbolImports, (ImmutableArray<ImportSymbolData> conditionalSymbolImports, (ImmutableArray<ImportFunctionData> functionImports, ImmutableArray<ImportFunctionData> conditionalFunctionImports)))) data)
     {
         var (compilation, (symbolImports, (conditionalSymbolImports, (functionImports, conditionalFunctionImports)))) = data;
@@ -65,19 +68,29 @@ partial class SourceGenerator
             return;
         }
 
-        var libraries = new Dictionary<ITypeSymbol, (Dictionary<string, List<ImportData>> unconditionalImports, Dictionary<ITypeSymbol, Dictionary<string, List<ImportData>>> conditionalImports)>(SymbolEqualityComparer.Default);
+        var libraries = new SortedDictionary<ITypeSymbol, (SortedDictionary<string, List<ImportData>> unconditionalImports, SortedDictionary<ITypeSymbol, SortedDictionary<string, List<ImportData>>> conditionalImports)>(mTypeSymbolComparer);
         var buildTree = new BuildTree();
 
-        foreach (var import in symbolImports.AsEnumerable<ImportData>().Concat(conditionalSymbolImports.AsEnumerable<ImportData>()).Concat(functionImports.AsEnumerable<ImportData>()).Concat(conditionalFunctionImports.AsEnumerable<ImportData>()))
+        foreach (var import in symbolImports.AsEnumerable<ImportData>()
+            .Concat(conditionalSymbolImports.AsEnumerable<ImportData>())
+            .Concat(functionImports.AsEnumerable<ImportData>())
+            .Concat(conditionalFunctionImports.AsEnumerable<ImportData>())
+            .OrderBy(static i => i.ImportLibraryType, mTypeSymbolComparer)
+            .ThenBy(static i => i.ConditionType, mTypeSymbolComparer)
+            .ThenBy(static i => i.SymbolName, StringComparer.Ordinal)
+        )
         {
             if (buildTree.TryAddImportData(import, spc, compilation))
             {
                 if (!libraries.TryGetValue(import.ImportLibraryType, out var library))
                 {
-                    libraries.Add(key: import.ImportLibraryType, library = (unconditionalImports: [], conditionalImports: new(SymbolEqualityComparer.Default)));
+                    libraries.Add(key: import.ImportLibraryType, library = (
+                        unconditionalImports: new(StringComparer.Ordinal),
+                        conditionalImports: new(mTypeSymbolComparer)
+                    ));
                 }
 
-                Dictionary<string, List<ImportData>> importsBySymbolName;
+                SortedDictionary<string, List<ImportData>> importsBySymbolName;
                 if (import.ConditionType is null)
                 {
                     importsBySymbolName = library.unconditionalImports;
@@ -86,7 +99,7 @@ partial class SourceGenerator
                 {
                     if (!library.conditionalImports.TryGetValue(import.ConditionType, out importsBySymbolName))
                     {
-                        library.conditionalImports.Add(key: import.ConditionType, importsBySymbolName = []);
+                        library.conditionalImports.Add(key: import.ConditionType, importsBySymbolName = new(StringComparer.Ordinal));
                     }
                 }
 
@@ -150,7 +163,7 @@ partial class SourceGenerator
                         // imported by:
                     """);
 
-				foreach (var import in imports)
+				foreach (var import in imports.OrderBy(static i => i.TargetMethod.ToDisplayString(mCommentMethodSymbolDisplayFormat), StringComparer.Ordinal))
 				{
 					builder.Append($$"""
                             
@@ -184,7 +197,7 @@ partial class SourceGenerator
                         // imported by:
                     """);
 
-					foreach (var import in imports)
+					foreach (var import in imports.OrderBy(static i => i.TargetMethod.ToDisplayString(mCommentMethodSymbolDisplayFormat), StringComparer.Ordinal))
 					{
 						builder.Append($$"""
                             
@@ -328,10 +341,10 @@ partial class SourceGenerator
                 builder.Append($$"""
 
                             if ({{unconditionalImports.Count switch
-                {
-                    > 0 => $"global::{NativeImportAttributesNamespaceName}.{NativeImportConditionTypeName}.{NativeImportConditionEvaluateMethodName}<{conditionType.ToDisplayString(mDefaultTypeSymbolDisplayFormat)}>()",
-                    _ => string.Format(CultureInfo.InvariantCulture, ConditionLocalFormat, conditionId++)
-                }}})
+                                {
+                                    > 0 => $"global::{NativeImportAttributesNamespaceName}.{NativeImportConditionTypeName}.{NativeImportConditionEvaluateMethodName}<{conditionType.ToDisplayString(mDefaultTypeSymbolDisplayFormat)}>()",
+                                    _ => string.Format(CultureInfo.InvariantCulture, ConditionLocalFormat, conditionId++)
+                                }}})
                             {
                     """);
 
