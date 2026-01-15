@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sdl3Sharp.SourceGeneration;
 
-partial class SourceGenerator
+partial class NativeImportSourceGenerator
 {
     private const string NativeImportAttributesNamespaceName = $"{nameof(Sdl3Sharp)}.{nameof(SourceGeneration)}";
 

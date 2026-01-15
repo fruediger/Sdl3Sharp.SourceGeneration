@@ -4,12 +4,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Sdl3Sharp.SourceGeneration;
 
 [Generator(LanguageNames.CSharp)]
-internal sealed partial class SourceGenerator : IIncrementalGenerator
+internal sealed partial class NativeImportSourceGenerator : IIncrementalGenerator
 {
-	private const string DiagnosticDescriptorIdPrefix = "SDL3SRCGN";
+	private const string DiagnosticDescriptorIdPrefix = "SDL3IMP";
 	private const string DiagnosticDescriptorCategory = $"{nameof(Sdl3Sharp)}.{nameof(SourceGeneration)}";
 
-	private static readonly (string Name, string Version) mTool = typeof(SourceGenerator).Assembly.GetName() switch { var assemblyName => (assemblyName.Name, assemblyName.Version.ToString(3)) };
+	private static readonly (string Name, string Version) mTool = typeof(NativeImportSourceGenerator).Assembly.GetName() switch { var assemblyName => (assemblyName.Name, assemblyName.Version.ToString(3)) };
 
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{

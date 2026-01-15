@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Sdl3Sharp.SourceGeneration;
 
-partial class SourceGenerator
+partial class NativeImportSourceGenerator
 {
     private const string LibraryIdentifierFormat = @"_Lib{0}";
     private const string SymbolIdentifierFormat = @"_Sym{0}";

@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Sdl3Sharp.SourceGeneration;
 
-partial class SourceGenerator
+partial class NativeImportSourceGenerator
 {
     private static readonly DiagnosticDescriptor mUnsupportedMethodDeclarationSignatureDescriptor = new(
         id: $"{DiagnosticDescriptorIdPrefix}0021",
