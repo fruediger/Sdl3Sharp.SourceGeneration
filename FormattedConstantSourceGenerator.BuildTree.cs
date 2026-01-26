@@ -134,10 +134,11 @@ partial class FormattedConstantSourceGenerator
 
 					{{indentation}}partial {{type switch
 					{
-						{ IsReferenceType: true, IsRecord: true } => "record ",
-						{ IsReferenceType: true } => "class ",
-						{ IsValueType: true, IsRecord: true } => "record struct ",
-						{ IsValueType: true } => "struct ",
+						{ TypeKind: TypeKind.Class, IsRecord: true } => "record ",
+						{ TypeKind: TypeKind.Class } => "class ",
+						{ TypeKind: TypeKind.Struct, IsRecord: true } => "record struct ",
+						{ TypeKind: TypeKind.Struct } => "struct ",
+						{ TypeKind: TypeKind.Interface } => "interface ",
 						_ => string.Empty
 					}}}{{type.Name}}{{(type.TypeParameters is { Length: > 0 } typeParameters ? $"<{string.Join(", ", typeParameters.Select(static param => param.Name))}>" : string.Empty)}}
 					{{indentation}}{
