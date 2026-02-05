@@ -266,8 +266,8 @@ partial class FormattedConstantSourceGenerator
 					{{indentation}}[global::System.CodeDom.Compiler.GeneratedCode("{{mTool.Name}}", "{{mTool.Version}}")]
 					{{indentation}}{{Data.TargetModifiers}} {{GetReturnTypeName(ReturnKind)}} {{property.Name}}
 					{{indentation}}{
-					{{indentation}}{{indentation}}[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining | global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
-					{{indentation}}{{indentation}}get => {{ResultLiteral}};
+					{{indentation}}{{IndentationPrintPrefix}}[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining | global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveOptimization)]
+					{{indentation}}{{IndentationPrintPrefix}}get => {{ResultLiteral}};
 					{{indentation}}}
 
 					""");
